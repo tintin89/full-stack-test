@@ -42,7 +42,7 @@ app.post("/api/files", upload.single("file"), async (req, res) => {
 app.get("api/users", async (req, res) => {
   //extract query params
   const { q } = req.query;
-  //validate that we have the query param
+  //validate that we have the query param;
   if (!q)
     return res.status(500).json({ message: "Query param  q is required" });
   if (Array.isArray(q))
@@ -60,3 +60,4 @@ app.get("api/users", async (req, res) => {
 app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);
 });
+
