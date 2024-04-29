@@ -27,7 +27,7 @@ app.post("/api/files", upload.single("file"), async (req, res) => {
     const csv = Buffer.from(file.buffer).toString("utf-8");
     console.log(csv);
     //transform string to JSON
-    json = csvToJson.csvStringToJson(csv);
+    json = csvToJson.fieldDelimiter(',').csvStringToJson(csv);
   } catch (error) {
     return res.status(500).json({ message: "Error parsing the file" });
   }
