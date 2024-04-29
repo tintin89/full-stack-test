@@ -13,6 +13,17 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+label{
+  display: block;
+  margin-bottom: 0.5em;
+}
+
+button[disabled] {
+  cursor: not-allowed;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
 a {
   font-weight: 500;
   color: #646cff;
