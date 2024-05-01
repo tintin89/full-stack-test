@@ -4,11 +4,12 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "set VITE_API_HOST=http://localhost:3000&& vite",
     "build": "tsc && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@uidotdev/usehooks": "^2.4.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "sonner": "^1.4.41"

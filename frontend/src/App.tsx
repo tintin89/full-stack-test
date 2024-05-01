@@ -1,9 +1,9 @@
 import { useState } from "react";
 import "./App.css";
 import { uploadFile } from "./services/upload";
-import { Toaster,toast } from "sonner";
+import { Toaster, toast } from "sonner";
 import { Data } from "./types";
-
+import { Search } from "./steps/Search";
 
 const APP_STATUS = {
   IDLE: "idle",
@@ -28,13 +28,14 @@ function App() {
   const showButton =
     status === APP_STATUS.READY_UPLOAD || status === APP_STATUS.UPLOADING;
 
+  const showInput = status !== APP_STATUS.READY_USAGE;
+
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const [file] = event.target.files ?? [];
     if (file) {
       setFile(file);
       setStatus(APP_STATUS.READY_UPLOAD);
     }
-    
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -42,41 +43,48 @@ function App() {
     if (status !== APP_STATUS.READY_UPLOAD || !file) return;
     setStatus(APP_STATUS.UPLOADING);
 
-    const [err,data] = await uploadFile(file);    
-    if(err) {
+    const [err, data] = await uploadFile(file);
+    if (err) {
       setStatus(APP_STATUS.ERROR);
       toast.error(err.message);
       return;
     }
     console.log(data);
     setStatus(APP_STATUS.READY_USAGE);
-    if(data) setDataR(data);
+    if (data) setDataR(data);
     toast.success("File uploaded successfully");
-    
   };
 
   return (
     <>
       <Toaster />
       <h4>Challenge CSV and Search</h4>
-      <form onSubmit={handleSubmit}>      
-        <div>
-          <label>
-            <input
-              disabled={status === APP_STATUS.UPLOADING}
-              onChange={handleInputChange}
-              name="file"
-              type="file"
-              accept=".csv"
-            />
-          </label>
-          {showButton && (
-            <button disabled={status === APP_STATUS.UPLOADING}>
-              {BUTTON_TEXT[status]}
-            </button>
-          )}
-        </div>
-      </form>
+
+      {showInput && (
+        <form onSubmit={handleSubmit}>
+          <div>
+            <label>
+              <input
+                disabled={status === APP_STATUS.UPLOADING}
+                onChange={handleInputChange}
+                name="file"
+                type="file"
+                accept=".csv"
+              />
+            </label>
+            {showButton && (
+              <button disabled={status === APP_STATUS.UPLOADING}>
+                {BUTTON_TEXT[status]}
+              </button>
+            )}
+          </div>
+        </form>
+      )}
+      {
+        status === APP_STATUS.READY_USAGE && (
+          <Search initialData={dataR} />
+        )
+      }
     </>
   );
 }
