@@ -1,35 +1,92 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from "react";
+import "./App.css";
+import { uploadFile } from "./services/upload";
+import { Toaster, toast } from "sonner";
+import { Data } from "./types";
+import { Search } from "./steps/Search";
+
+const APP_STATUS = {
+  IDLE: "idle",
+  ERROR: "error",
+  READY_UPLOAD: "ready_upload",
+  UPLOADING: "uploading",
+  READY_USAGE: "ready_usage",
+} as const;
+
+const BUTTON_TEXT = {
+  [APP_STATUS.READY_UPLOAD]: "Upload",
+  [APP_STATUS.UPLOADING]: "Uploading...",
+};
+
+type AppStatus = (typeof APP_STATUS)[keyof typeof APP_STATUS];
 
 function App() {
-  const [count, setCount] = useState(0);
+  const [status, setStatus] = useState<AppStatus>(APP_STATUS.IDLE);
+  const [file, setFile] = useState<File | null>(null);
+  const [dataR, setDataR] = useState<Data>([]);
+
+  const showButton =
+    status === APP_STATUS.READY_UPLOAD || status === APP_STATUS.UPLOADING;
+
+  const showInput = status !== APP_STATUS.READY_USAGE;
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const [file] = event.target.files ?? [];
+    if (file) {
+      setFile(file);
+      setStatus(APP_STATUS.READY_UPLOAD);
+    }
+  };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (status !== APP_STATUS.READY_UPLOAD || !file) return;
+    setStatus(APP_STATUS.UPLOADING);
+
+    const [err, data] = await uploadFile(file);
+    if (err) {
+      setStatus(APP_STATUS.ERROR);
+      toast.error(err.message);
+      return;
+    }
+    console.log(data);
+    setStatus(APP_STATUS.READY_USAGE);
+    if (data) setDataR(data);
+    toast.success("File uploaded successfully");
+  };
 
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <Toaster />
+      <h4>Challenge CSV and Search</h4>
+
+      {showInput && (
+        <form onSubmit={handleSubmit}>
+          <div>
+            <label>
+              <input
+                disabled={status === APP_STATUS.UPLOADING}
+                onChange={handleInputChange}
+                name="file"
+                type="file"
+                accept=".csv"
+              />
+            </label>
+            {showButton && (
+              <button disabled={status === APP_STATUS.UPLOADING}>
+                {BUTTON_TEXT[status]}
+              </button>
+            )}
+          </div>
+        </form>
+      )}
+      {
+        status === APP_STATUS.READY_USAGE && (
+          <Search initialData={dataR} />
+        )
+      }
     </>
-  )
+  );
 }
 
-export default App
+export default App;
